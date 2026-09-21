@@ -161,6 +161,98 @@ function initScrollReveal() {
 
 
 /* =========================================================
+   EXPERIENCE IMAGE ROTATOR
+   ========================================================= */
+
+function initExperienceGallery() {
+
+    const gallery = document.querySelector(".experience-image");
+    const current = gallery?.querySelector(".experience-slide-current");
+    const next = gallery?.querySelector(".experience-slide-next");
+
+    if (!gallery || !current || !next) return;
+
+    const images = [
+        { src: "assets/len+k/len%20(1).jpeg", alt: "LEN+K experience — people and conversations" },
+        { src: "assets/len+k/len%20(2).jpeg", alt: "LEN+K experience — a site visit" },
+        { src: "assets/len+k/len%20(3).jpeg", alt: "LEN+K experience — a shared moment" },
+        { src: "assets/len+k/len%20(4).jpeg", alt: "LEN+K experience — people in conversation" },
+        { src: "assets/len+k/len%20(5).jpeg", alt: "LEN+K experience — a personal encounter" }
+    ];
+
+    const reducedMotion = window.matchMedia(
+        "(prefers-reduced-motion: reduce)"
+    ).matches;
+
+    if (reducedMotion) return;
+
+    images.forEach(image => {
+        const preload = new Image();
+        preload.src = image.src;
+    });
+
+    let index = 0;
+    let timer = null;
+    let showingCurrent = true;
+
+    function showNext() {
+        const nextIndex = (index + 1) % images.length;
+        const image = images[nextIndex];
+
+        if (showingCurrent) {
+            next.src = image.src;
+            next.alt = image.alt;
+            next.setAttribute("aria-hidden", "false");
+            current.setAttribute("aria-hidden", "true");
+
+            requestAnimationFrame(() => {
+                next.style.opacity = "1";
+                current.style.opacity = "0";
+            });
+        } else {
+            current.src = image.src;
+            current.alt = image.alt;
+            current.setAttribute("aria-hidden", "false");
+            next.setAttribute("aria-hidden", "true");
+
+            requestAnimationFrame(() => {
+                current.style.opacity = "1";
+                next.style.opacity = "0";
+            });
+        }
+
+        index = nextIndex;
+        showingCurrent = !showingCurrent;
+    }
+
+    function start() {
+        if (timer) return;
+        timer = window.setInterval(showNext, 2000);
+    }
+
+    function stop() {
+        if (!timer) return;
+        window.clearInterval(timer);
+        timer = null;
+    }
+
+    const observer = new IntersectionObserver(
+        entries => {
+            if (entries[0].isIntersecting) {
+                start();
+            } else {
+                stop();
+            }
+        },
+        { threshold: 0.15 }
+    );
+
+    observer.observe(gallery);
+
+}
+
+
+/* =========================================================
    PROJECT FILTERS
    ========================================================= */
 
@@ -1404,6 +1496,7 @@ document.addEventListener("DOMContentLoaded", () => {
     initJVAIntro();
     initMenu();
     initScrollReveal();
+    initExperienceGallery();
     initProjectFilters();
     initScrollProgress();
     initSmoothLinks();
